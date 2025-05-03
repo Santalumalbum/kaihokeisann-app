@@ -34,7 +34,6 @@
       font-size: 20px;
       margin-top: 30px;
       font-weight: bold;
-      white-space: pre-line;
     }
   </style>
 </head>
@@ -88,6 +87,10 @@
     結果: -
   </div>
 
+  <div class="result" id="e9Result">
+    E9の値: -
+  </div>
+
   <script>
     const state = {
       kaigodo: null,
@@ -95,8 +98,6 @@
       futan: null,
       times: null
     };
-
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCg43bBoNE1yJ8z1LONL8mrbJc2zGwAOcNCaMyxx3cRS_mL4nS-VR9fmXEB37-qydU/exec"; // ←ご自身のGAS URLに変更
 
     function selectOption(type, btn, value) {
       const groupId = {
@@ -128,8 +129,9 @@
       let result = "-";
 
       if (kaigodo?.startsWith("介護")) {
-        result = 20 + parseInt(kaigodo.replace("介護", ""));
-      } else if (kaigodo === "支援1" || kaigodo === "事業対象者") {
+        const num = parseInt(kaigodo.replace("介護", ""));
+        result = 20 + num;
+      } else if (kaigodo === "支援1") {
         if (hokensha === "北区") {
           if (futan === "1割") result = 1;
           else if (futan === "2割") result = 3;
@@ -145,34 +147,34 @@
         } else if (hokensha === "豊島区") {
           result = 20;
         }
+      } else if (kaigodo === "事業対象者") {
+        if (hokensha === "北区") {
+          if (futan === "1割") result = 1;
+          else if (futan === "2割") result = 3;
+          else if (futan === "3割") result = 5;
+        } else if (hokensha === "豊島区") {
+          result = 19;
+        }
       }
 
-      const resultDiv = document.getElementById("result");
+      const text = result !== "-" && times !== null ? `番号: ${result}、回数: ${times}回` : "-";
+      document.getElementById("result").innerText = `結果: ${text}`;
 
       if (result !== "-" && times !== null) {
-        resultDiv.innerText = `結果: 番号: ${result}、回数: ${times}回\n請求予定金額を取得中...`;
-
-        fetch(GAS_URL, {
+        fetch("https://script.google.com/macros/s/AKfycbxSVDaB3Hlsw_JVvyQvhdUsrswgS4HngFfCl26blZTY_Dwo_0_3F28s-sJQMMGAvDcc/exec", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ result, times })
         })
-        .then(response => {
-          if (!response.ok) throw new Error("ネットワークエラー");
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-          const amount = data.amount;
-          resultDiv.innerText = `結果: 番号: ${result}、回数: ${times}回\n請求予定金額は ${amount} 円です。`;
+          document.getElementById("e9Result").innerText = `E9の値: ${data.e9}`;
         })
         .catch(err => {
-          console.error("送信エラー:", err);
-          resultDiv.innerText = `結果: 番号: ${result}、回数: ${times}回\n金額取得に失敗しました。`;
+          document.getElementById("e9Result").innerText = `E9取得エラー: ${err}`;
         });
-      } else {
-        resultDiv.innerText = "結果: -";
       }
     }
   </script>
