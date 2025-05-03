@@ -173,8 +173,10 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            result: 選択された結果の数値,
-            times: 月の利用回数の数値
+            result: result,
+            times: times
+          })
+            
           })
         })
         .then(() => {
@@ -189,3 +191,4 @@
   </script>
 </body>
 </html>
+
