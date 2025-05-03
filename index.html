@@ -168,13 +168,19 @@
       if (result !== "-" && times !== null) {
         fetch("https://script.google.com/macros/s/AKfycbw3obi6W3vkxNcSlcF3pkdiYLOI48ohuC-JA9-A0f6RgOBhsUgtJOnzyc5nyQorNHrm/exec", {
           method: "POST",
-          body: JSON.stringify({ result: result, times: times }),
+          mode: "no-cors", // CORS回避用
           headers: {
             "Content-Type": "application/json"
-          }
-        }).then(res => res.text()).then(res => {
-          console.log("送信結果:", res);
-        }).catch(err => {
+          },
+          body: JSON.stringify({
+            result: 選択された結果の数値,
+            times: 月の利用回数の数値
+          })
+        })
+        .then(() => {
+          console.log("送信完了（no-corsのため結果確認できず）");
+        })
+        .catch(err => {
           console.error("送信エラー:", err);
         });
       }
