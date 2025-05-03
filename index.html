@@ -166,8 +166,9 @@
 
       // Google Apps Script に送信
       if (result !== "-" && times !== null) {
-        fetch("https://script.google.com/macros/s/AKfycbxE2LPBR7pD_bS3VOUn-Y8syZDrbE9MK_OSGHJEovJwDV_HOwZ43rKkdsQT6nAVwfDe/exec", {
+        fetch("https://script.google.com/macros/s/AKfycbw3obi6W3vkxNcSlcF3pkdiYLOI48ohuC-JA9-A0f6RgOBhsUgtJOnzyc5nyQorNHrm/exec", {
           method: "POST",
+          mode: "no-cors", // CORS回避用
           headers: {
             "Content-Type": "application/json"
           },
@@ -176,12 +177,8 @@
             times: times
           })
         })
-        .then(response => response.json())
-        .then(data => {
-          const amount = data.amount;
-          const amountMsg = `請求予定金額は${amount}円です。`;
-          const resultDiv = document.getElementById("result");
-          resultDiv.innerText += `\n${amountMsg}`;
+        .then(() => {
+          console.log("送信完了（no-corsのため結果確認できず）");
         })
         .catch(err => {
           console.error("送信エラー:", err);
