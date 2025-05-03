@@ -34,7 +34,7 @@
       font-size: 20px;
       margin-top: 30px;
       font-weight: bold;
-      white-space: pre-line; /* 改行表示を有効にする */
+      white-space: pre-line;
     }
   </style>
 </head>
@@ -96,6 +96,8 @@
       times: null
     };
 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxCg43bBoNE1yJ8z1LONL8mrbJc2zGwAOcNCaMyxx3cRS_mL4nS-VR9fmXEB37-qydU/exec"; // ←ご自身のGAS URLに変更
+
     function selectOption(type, btn, value) {
       const groupId = {
         kaigodo: "kaigodoGroup",
@@ -150,20 +152,20 @@
       if (result !== "-" && times !== null) {
         resultDiv.innerText = `結果: 番号: ${result}、回数: ${times}回\n請求予定金額を取得中...`;
 
-        fetch("https://script.google.com/macros/s/AKfycbyMmzB_2eoZZkTJaL9CDLMxWg2Ps3r8Y5YanFx67uvrr9aKep7DkkQZjz6QjEkBmcys/exec", {
+        fetch(GAS_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            result: result,
-            times: times
-          })
+          body: JSON.stringify({ result, times })
         })
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) throw new Error("ネットワークエラー");
+          return response.json();
+        })
         .then(data => {
           const amount = data.amount;
-          resultDiv.innerText = `結果: 番号: ${result}、回数: ${times}回\n請求予定金額は${amount}円です。`;
+          resultDiv.innerText = `結果: 番号: ${result}、回数: ${times}回\n請求予定金額は ${amount} 円です。`;
         })
         .catch(err => {
           console.error("送信エラー:", err);
