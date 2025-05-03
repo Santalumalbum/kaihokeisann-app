@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>介護情報入力</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section h2 {
+      margin-bottom: 10px;
+    }
+    .button-group button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      background-color: white;
+    }
+    .button-group button.selected {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #hokenshaGroup {
+      display: none;
+    }
+    .result {
+      font-size: 20px;
+      margin-top: 30px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="section">
+    <h2>介護度は？</h2>
+    <div class="button-group" id="kaigodoGroup">
+      <button onclick="selectOption('kaigodo', this, '支援1')">支援1</button>
+      <button onclick="selectOption('kaigodo', this, '支援2')">支援2</button>
+      <button onclick="selectOption('kaigodo', this, '介護1')">介護1</button>
+      <button onclick="selectOption('kaigodo', this, '介護2')">介護2</button>
+      <button onclick="selectOption('kaigodo', this, '介護3')">介護3</button>
+      <button onclick="selectOption('kaigodo', this, '介護4')">介護4</button>
+      <button onclick="selectOption('kaigodo', this, '介護5')">介護5</button>
+      <button onclick="selectOption('kaigodo', this, '事業対象者')">事業対象者</button>
+    </div>
+  </div>
+
+  <div class="section" id="hokenshaGroup">
+    <h2>保険者は？</h2>
+    <div class="button-group" id="hokenshaButtons">
+      <button onclick="selectOption('hokensha', this, '北区')">北区</button>
+      <button onclick="selectOption('hokensha', this, '豊島区')">豊島区</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>負担割合は？</h2>
+    <div class="button-group" id="futanGroup">
+      <button onclick="selectOption('futan', this, '1割')">1割</button>
+      <button onclick="selectOption('futan', this, '2割')">2割</button>
+      <button onclick="selectOption('futan', this, '3割')">3割</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>月に何回利用予定ですか？</h2>
+    <div class="button-group" id="timesGroup">
+      <button onclick="selectOption('times', this, 1)">1回</button>
+      <button onclick="selectOption('times', this, 2)">2回</button>
+      <button onclick="selectOption('times', this, 3)">3回</button>
+      <button onclick="selectOption('times', this, 4)">4回</button>
+      <button onclick="selectOption('times', this, 5)">5回</button>
+      <button onclick="selectOption('times', this, 6)">6回</button>
+      <button onclick="selectOption('times', this, 7)">7回</button>
+      <button onclick="selectOption('times', this, 8)">8回</button>
+    </div>
+  </div>
+
+  <div class="result" id="result">
+    結果: -
+  </div>
+
+  <script>
+    const state = {
+      kaigodo: null,
+      hokensha: null,
+      futan: null,
+      times: null
+    };
+
+    function selectOption(type, btn, value) {
+      // 1. 以前の選択をリセット
+      const groupId = {
+        kaigodo: "kaigodoGroup",
+        hokensha: "hokenshaButtons",
+        futan: "futanGroup",
+        times: "timesGroup"
+      }[type];
+
+      document.querySelectorAll(`#${groupId} button`).forEach(b => b.classList.remove('selected'));
+
+      // 2. 選択したボタンに色をつける
+      btn.classList.add('selected');
+
+      // 3. 状態を保存
+      state[type] = value;
+
+      // 4. 保険者の表示制御
+      if (type === "kaigodo") {
+        if (["支援1", "支援2", "事業対象者"].includes(value)) {
+          document.getElementById("hokenshaGroup").style.display = "block";
+        } else {
+          document.getElementById("hokenshaGroup").style.display = "none";
+          state.hokensha = null;
+          document.querySelectorAll("#hokenshaButtons button").forEach(b => b.classList.remove('selected'));
+        }
+      }
+
+      // 5. 結果を更新
+      updateResult();
+    }
+
+    function updateResult() {
+      const { kaigodo, hokensha, futan, times } = state;
+      let result = "-";
+
+      if (kaigodo?.startsWith("介護")) {
+        const num = parseInt(kaigodo.replace("介護", ""));
+        result = 20 + num;
+      } else if (kaigodo === "支援1") {
+        if (hokensha === "北区") {
+          if (futan === "1割") result = 1;
+          else if (futan === "2割") result = 3;
+          else if (futan === "3割") result = 5;
+        } else if (hokensha === "豊島区") {
+          result = 19;
+        }
+      } else if (kaigodo === "支援2") {
+        if (hokensha === "北区") {
+          if (futan === "1割") result = 2;
+          else if (futan === "2割") result = 4;
+          else if (futan === "3割") result = 6;
+        } else if (hokensha === "豊島区") {
+          result = 20;
+        }
+      } else if (kaigodo === "事業対象者") {
+        if (hokensha === "北区") {
+          if (futan === "1割") result = 1;
+          else if (futan === "2割") result = 3;
+          else if (futan === "3割") result = 5;
+        } else if (hokensha === "豊島区") {
+          result = 19;
+        }
+      }
+
+      const text = result !== "-" && times !== null ? `番号: ${result}、回数: ${times}回` : "-";
+      // 結果を更新
+      document.getElementById("result").innerText = `結果: ${text}`;
+
+      // Google Apps Script に送信
+      if (result !== "-" && times !== null) {
+        fetch("https://script.google.com/macros/s/AKfycbw3obi6W3vkxNcSlcF3pkdiYLOI48ohuC-JA9-A0f6RgOBhsUgtJOnzyc5nyQorNHrm/exec", {
+          method: "POST",
+          body: JSON.stringify({ result: result, times: times }),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }).then(res => res.text()).then(res => {
+          console.log("送信結果:", res);
+        }).catch(err => {
+          console.error("送信エラー:", err);
+        });
+      }
+
+    }
+  </script>
+</body>
+</html>
